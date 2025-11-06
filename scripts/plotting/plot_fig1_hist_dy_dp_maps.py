@@ -36,23 +36,19 @@ end_year_avg = 2019
 
 # Timeseries parameters
 ylim_top_dy = 1.0
-ylim_bottom_dy = -18
-ylim_top_dp = 40.0
+ylim_bottom_dy = -16
+ylim_top_dp = 10.0
 ylim_bottom_dp = -120
-
-window_size = 5
-smooth_method = "numpy"  # options: numpy, pandas, scipy
-np_mode = "full"  # full, same, valid
-
-# Timeseries parameters
-start_year = 1990
-end_year = 2019
-start_year_plot = 1990
+start_year_plot = 2000
 end_year_plot = 2019
 
-global_label = "Global"
-dy_color = "black"
-dp_color = "black"
+label_dy = "Yield change [%]"
+label_dp = "Production change [Mt]"
+
+window_size = 5
+smooth_method = "numpy"
+np_mode = "full"
+
 ipcc_colors = {"ldc": "crimson", "developing": "goldenrod", "developed": "dodgerblue"}  # ldc,developing,developed
 ipcc_labels = {"ldc": "LDC", "developing": "Developing", "developed": "Developed"}
 labels_alphabets = utils.generate_alphabet_list(4, option="lower")
@@ -64,6 +60,7 @@ quantile_high = 0.75
 ar6_region = "region_ar6_dev"
 regions = ["ldc", "developing", "developed"]
 
+# For input file names
 start_year_hist = 1971
 end_year_hist = 1989
 start_year_fut = 1990
@@ -75,8 +72,6 @@ country_shape_file = f"{root_dir}/resources/ne_10m_admin_0_countries/ne_10m_admi
 # Initialize empty DataFrames
 df_dy_all = []
 df_dp_all = []
-df_dy_corey_all = []
-df_dp_corey_all = []
 
 # Load data for all crops
 for crop in crops:
@@ -144,12 +139,12 @@ print("dy max and min:", dy_max, dy_min)
 print("dp max and min:", dp_max, dp_min)
 
 # Prepare data for timeseries
-years = [x for x in range(start_year, end_year + 1)]
+years = [x for x in range(start_year_fut, end_year_fut + 1)]
 years_plot = [x for x in range(start_year_plot, end_year_plot + 1)]
 plot_start_idx = years.index(start_year_plot)
 plot_end_idx = years.index(end_year_plot) + 1
 
-cols_ts = ["country"] + [str(x) for x in range(start_year, end_year + 1)]
+cols_ts = ["country"] + [str(x) for x in range(start_year_fut, end_year_fut + 1)]
 dy_all_ts = df_dy[cols_ts]
 dp_all_ts = df_dp[cols_ts]
 
@@ -182,7 +177,6 @@ dy_ipcc_mean.rename(columns={'region_ar6_dev': 'region'}, inplace=True)
 dp_ipcc_stat = dp_ipcc_melted.groupby(['region_ar6_dev', 'year'], as_index=False)['value'].sum()
 dp_ipcc_stat.rename(columns={'region_ar6_dev': 'region'}, inplace=True)
 
-
 """
 PLOT
 """
@@ -200,8 +194,6 @@ else:
 ######################## DY MAP
 ax1 = fig.add_subplot(gs[0, 0], projection=ccrs.Robinson())
 var = "dy_avg"
-y_label = r'$\overline{dy}$ [%]'
-title = "(a) Yield loss"
 
 world_plot = world.copy()
 
@@ -221,20 +213,17 @@ plot = world_plot.plot(column=var, ax=ax1, cmap=cmap_dy,
 
 # Add colorbar at the bottom
 pos = ax1.get_position()
-cax = fig.add_axes([pos.x0 + 0.03, pos.y0 + 0.07, pos.width - 0.07, 0.01])
+cax = fig.add_axes([pos.x0 + 0.01, pos.y0 + 0.07, pos.width - 0.07, 0.01])
 cbar = plt.colorbar(sm, cax=cax, orientation='horizontal', extend='both')
-cbar.set_label(y_label, size=label_fontsize)
+cbar.set_label(label_dy, size=label_fontsize)
 cbar.ax.tick_params(labelsize=tick_fontsize)
-
-ax1.set_title(title, pad=10, fontsize=title_fontsize)
+ax1.text(0.0, 1.15, "a", transform=ax1.transAxes,fontsize=label_fontsize+1, fontweight='bold', va='top', ha='right')
 ax1.set_global()
 ax1.gridlines(alpha=0.2)
 
 ######################## DP MAP
 ax2 = fig.add_subplot(gs[0, 1], projection=ccrs.Robinson())
 var = f"dp_sum"
-y_label = "$dp$ [Mt]"
-title = " (b) Production loss"
 
 world_plot = world.copy()
 
@@ -243,9 +232,7 @@ world_plot = world_plot.to_crs(ccrs.Robinson().proj4_init)
 world_plot.plot(ax=ax2, color='white', edgecolor='gray', linewidth=0.5)
 world_plot[var] = world_plot[var] / 1e6  # convert to Mt
 
-# Create a ScalarMappable for the colorbar
 norm = plt.Normalize(vmin=vmin_dp, vmax=vmax_dp)
-#norm = colors.SymLogNorm(linthresh=0.001, linscale=1.0, vmin=vmin_dp, vmax=vmax_dp, base=10)
 sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap_dp)
 sm.set_array([])
 
@@ -257,37 +244,40 @@ plot = world_plot.plot(column=var, ax=ax2, cmap=cmap_dp,
 
 # Add colorbar at the bottom
 pos = ax2.get_position()
-cax = fig.add_axes([pos.x0 + 0.1, pos.y0 + 0.07, pos.width - 0.07, 0.01])
+cax = fig.add_axes([pos.x0 + 0.09, pos.y0 + 0.07, pos.width - 0.07, 0.01])
 cbar = plt.colorbar(sm, cax=cax, orientation='horizontal', extend='both'
                     , format=utils.format_fn
-                    # ,ticks=ticks_dp
                     )
-cbar.set_label(y_label, size=label_fontsize)
+cbar.set_label(label_dp, size=label_fontsize)
 cbar.ax.tick_params(labelsize=tick_fontsize)
-
-ax2.set_title(title, pad=10, fontsize=title_fontsize)
+ax2.text(0.0, 1.15, "b", transform=ax2.transAxes,fontsize=label_fontsize+1, fontweight='bold', va='top', ha='right')
 ax2.set_global()
 ax2.gridlines(alpha=0.2)
 
 ######################## DY TIMESERIES
+dy_region_list = []
 ax3 = fig.add_subplot(gs[1, 0])
-title = " (c) Mean yield loss"
 values = dy_global.values
+
 smoothed_values = utils.get_smoothed_values(values, window_size=window_size,
                                       method=smooth_method, np_mode=np_mode)
 line1, = ax3.plot(years_plot, smoothed_values[plot_start_idx:plot_end_idx],
                   color="black", linestyle='-', linewidth=0.8, label="Global")
-print(f"GLOBAL {crop_plot} yield loss:", smoothed_values[plot_start_idx:plot_end_idx])
 
 # Add global confidence intervals for 2019
 year_2019 = years_plot[-1]
 dy_2019 = dy_ipcc_melted[dy_ipcc_melted['year'] == 2019]
+dy_mean = dy_2019["value"].mean()
 ci_low = dy_2019['value'].quantile(quantile_low)
 ci_high = dy_2019['value'].quantile(quantile_high)
+ci_low_interval = abs(dy_mean - ci_low)
+ci_high_interval = abs(dy_mean - ci_high)
 final_val = smoothed_values[plot_end_idx - 1]
+ci_low = final_val - ci_low_interval
+ci_high = final_val + ci_high_interval
 
 # Plot global CI
-offsets = {'global': -0.5, 'ldc': -0.2, 'developing': 0.2, 'developed': 0.5}
+offsets = {'global': -0.4, 'ldc': -0.2, 'developing': 0.0, 'developed': 0.2}
 ax3.vlines(year_2019 + offsets['global'], ci_low, ci_high,
            color="black", linestyle='-', linewidth=0.8)
 ax3.plot(year_2019 + offsets['global'], final_val, 'o',
@@ -301,21 +291,23 @@ for region in regions:
     line3, = ax3.plot(years_plot, smoothed_values_ipcc[plot_start_idx:plot_end_idx],
                       color=ipcc_colors[region], linestyle="solid", linewidth=0.8, label=ipcc_labels[region])
 
-    print(f"{region} {crop_plot} dy:", smoothed_values_ipcc[plot_start_idx:plot_end_idx])
+    dy_region_list.append(values_ipcc[plot_start_idx:plot_end_idx])
 
     # Add confidence intervals for 2019
     year_2019 = years_plot[-1]
     dy_2019 = dy_ipcc_melted[dy_ipcc_melted['year'] == 2019]
 
-    # Set horizontal offsets for different regions
-    offsets = {'global': -0.5, 'ldc': -0.2, 'developing': 0.2, 'developed': 0.5}
-
     # Add CI for each region
     dy_region = dy_2019[dy_2019['region_ar6_dev'].str.lower() == region.lower()]['value']
-    if len(dy_region) > 0:
+    if len(dy_region) > 0:  # Only plot if we have data
+        region_mean = dy_region.mean()
         ci_low = dy_region.quantile(quantile_low)
         ci_high = dy_region.quantile(quantile_high)
+        ci_low_interval = abs(region_mean-ci_low)
+        ci_high_interval = abs(region_mean-ci_high)
         final_val = smoothed_values_ipcc[plot_end_idx - 1]
+        ci_low = final_val - ci_low_interval
+        ci_high = final_val + ci_high_interval
 
         # Plot vertical line with CI
         ax3.vlines(year_2019 + offsets[region.lower()], ci_low, ci_high,
@@ -328,22 +320,22 @@ if ylim_top_dy != None:
 if ylim_bottom_dy != None:
     ax3.set_ylim(bottom=ylim_bottom_dy)
 
-ax3.set_title(title, pad=10, fontsize=title_fontsize)
+ax3.set_xlim(right=end_year_plot+0.5)
+ax3.text(0.0, 1.25, "c", transform=ax3.transAxes,fontsize=label_fontsize+1, fontweight='bold', va='top', ha='right')
 ax3.axhline(0, color="black", linestyle="dashed", lw=0.9)
 ax3.set_xlabel('Year', fontsize=label_fontsize)
-ax3.set_ylabel(r'$\overline{dy}$ [%]', fontsize=label_fontsize)
+ax3.set_ylabel(label_dy, fontsize=label_fontsize)
 ax3.tick_params(axis='both', labelsize=tick_fontsize)
 ax3.grid(True)
 
 ######################## DP TIMESERIES
+dp_region_list = []
 ax4 = fig.add_subplot(gs[1, 1])
-title = " (d) Total production loss"
 values = dp_global.values / 1e6
 smoothed_values = utils.get_smoothed_values(values, window_size=window_size,
                                       method=smooth_method, np_mode=np_mode)
 ax4.plot(years_plot, smoothed_values[plot_start_idx:plot_end_idx],
          color="black", linestyle='-', linewidth=0.8, label="Global")
-print(f"GLOBAL {crop_plot} production loss:", smoothed_values[plot_start_idx:plot_end_idx])
 
 # IPCC REGIONS
 for region in regions:
@@ -353,26 +345,93 @@ for region in regions:
     line4, = ax4.plot(years_plot, smoothed_values_ipcc[plot_start_idx:plot_end_idx],
                       color=ipcc_colors[region], linestyle="solid", linewidth=0.8, label=ipcc_labels[region])
 
-    print(f"{region} {crop_plot} dp:", smoothed_values_ipcc[plot_start_idx:plot_end_idx])
+    dp_region_list.append(values_ipcc[plot_start_idx:plot_end_idx])
+
 
 if ylim_top_dp != None:
     ax4.set_ylim(top=ylim_top_dp)
 if ylim_bottom_dp != None:
     ax4.set_ylim(bottom=ylim_bottom_dp)
 
-ax4.set_title(title, pad=10, fontsize=title_fontsize)
+ax4.set_xlim(right=end_year_plot+0.5)
+ax4.text(0.0, 1.25, "d", transform=ax4.transAxes,fontsize=label_fontsize+1, fontweight='bold', va='top', ha='right')
 ax4.axhline(0, color="black", linestyle="dashed", lw=0.9)
 ax4.set_xlabel('Year', fontsize=label_fontsize)
-ax4.set_ylabel(r'$dp$ [Mt]', fontsize=label_fontsize)
+ax4.set_ylabel(label_dp, fontsize=label_fontsize)
 ax4.tick_params(axis='both', labelsize=tick_fontsize)
 ax4.grid(True)
-ax4.legend(bbox_to_anchor=(-0.2, -0.535), loc='center', fontsize=tick_fontsize - 1, ncol=4)
+
+# LEGEND
+ax4.legend(bbox_to_anchor=(-0.2, -0.6), loc='center', fontsize=tick_fontsize - 1, ncol=4)
 
 fig.subplots_adjust(left=0.08,
-                    bottom=0.16,
+                    bottom=0.18,
                     right=0.97,  # 0.83 (with legend), 0.9 (no legend)
                     top=0.99,
                     wspace=0.25,
-                    hspace=0.5)
+                    hspace=0.35)
 
 plt.show()
+
+"""
+PRINT DIAGNOSTICS
+"""
+print("\n" + "="*50)
+print("DY top 10 countries")
+print("="*50)
+dy_top10 = df1.sort_values(by='dy_avg', ascending=True).head(10)
+print (dy_top10)
+
+print("\n" + "="*50)
+print("DP top 10 countries")
+print("="*50)
+dp_top10 = df2.sort_values(by='dp_sum', ascending=True).head(10)
+print (dp_top10)
+
+#----------------------- ANALYZE value of specific country
+start_year = 2000
+end_year = 2019
+country = "ALL" #ALL, MOZ,CAF,MLI, MWI; CHN, BRA, FRA; GNB, ETH, TZA
+
+year_str = [str(x) for x in range(start_year, end_year + 1)]
+cols = ["country"] + year_str
+
+dy_years = df_dy[cols]
+dp_years = df_dp[cols]
+
+dp_allcrop = dp_years.groupby('country').sum(numeric_only=True).reset_index()
+dy_allcrop = dy_years.groupby('country').mean(numeric_only=True).reset_index()
+
+dp_allcrop[f"dp_sum"] = dp_allcrop.loc[:, f"{start_year}":f"{end_year}"].sum(axis=1)
+dy_allcrop["dy_avg"] = dy_allcrop.loc[:, f"{start_year}":f"{end_year}"].mean(axis=1)
+
+if country == "ALL":
+    dp_cntry = dp_allcrop["dp_sum"].sum()
+    dy_cntry = dy_allcrop["dy_avg"].mean()
+    dp_cntry = dp_cntry / 1e6
+else:
+    dp_cntry = dp_allcrop[dp_allcrop["country"] == country]
+    dy_cntry = dy_allcrop[dy_allcrop["country"] == country]
+    dp_cntry = dp_cntry["dp_sum"].values / 1e6
+    dy_cntry = dy_cntry["dy_avg"].values
+    dp_cntry = dp_cntry[0]
+    dy_cntry = dy_cntry[0]
+
+# GET REGION DATA
+print ()
+print ("--------------------")
+dy_ldc_mean = dy_region_list[0].mean()
+dy_developing_mean = dy_region_list[1].mean()
+dy_dev_mean = dy_region_list[2].mean()
+
+dp_ldc_sum = dp_region_list[0].sum()
+dp_developing_sum = dp_region_list[1].sum()
+dp_dev_sum = dp_region_list[2].sum()
+print ("LENGTHS:",len(dy_region_list[0]),len(dp_region_list[0]))
+print (f"TOTAL DP for LDC, DEVELOPING, DEVELOPED over {start_year}-{end_year} (Mt): {dp_ldc_sum}, {dp_developing_sum}, {dp_dev_sum}")
+print (f"MEAN DY for LDC, DEVELOPING, DEVELOPED over {start_year}-{end_year} (%): {dy_ldc_mean}, {dy_developing_mean}, {dy_dev_mean}")
+
+
+print ("--------------------")
+print (f"TOTAL DP for {country} over {start_year}-{end_year} (Mt): {dp_cntry}")
+print (f"MEAN DY for {country} over {start_year}-{end_year} (%): {dy_cntry}")
