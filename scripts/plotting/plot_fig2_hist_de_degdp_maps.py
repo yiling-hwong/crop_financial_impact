@@ -56,8 +56,7 @@ labels_alphabets = utils.generate_alphabet_list(4, option="lower")
 
 quantile_low = 0.25
 quantile_high = 0.75
-
-###################### ###################### ###################### ######################
+##################################################################
 
 ar6_region = "region_ar6_dev"
 regions = ["ldc","developing","developed"]
