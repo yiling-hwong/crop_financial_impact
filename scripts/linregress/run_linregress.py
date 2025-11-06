@@ -23,7 +23,7 @@ PARAMETERS
 crop = "all" # maize, wheat, soy, all
 start_year = 2007
 end_year = 2019
-pred_str = "t2s2_int" #t3s3, t2s2_int
+pred_str = "t3s3" #t3s3, t2s2_int
 
 do_cv_flag = True  # 10-fold cross-validation (OOS within-R2)
 save_model_flag = True
@@ -337,7 +337,7 @@ if do_cv_flag == True:
     if mse_mean < y_variance:
         print("MSE smaller than y_variance, GOOD!")
     else:
-        print("MSE larger than y_variance, not good YYY")
+        print("MSE larger than y_variance, not good.")
 
     print("################################")
     print ()
