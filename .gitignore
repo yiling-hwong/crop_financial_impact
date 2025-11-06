@@ -110,7 +110,7 @@ data/historical/growing_season/pixdat_spei_gs_wheat_hist.nc
 data/historical/growing_season/pixdat_spei_gs_soy_hist.nc
 data/historical/growing_season/pixdat_spei_gs_maize.nc
 data/historical/growing_season/pixdat_spei_gs_wheat.nc
-data/resources/FAOSTAT/FAOSTAT_PP_data_en_10-14-2025.xls
+data/historical/FAOSTAT/FAOSTAT_PP_data_en_10-14-2025.xls
 data/historical/growing_season/pixdat_spei_gs_soy_hist.nc
 data/historical/growing_season/pixdat_spei_gs_maize.nc
 data/historical/growing_season/pixdat_spei_gs_wheat.nc
