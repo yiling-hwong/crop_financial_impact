@@ -20,13 +20,13 @@ import utils
 """
 PARAMETERS
 """
-crop = "maize" # maize, wheat, soy, all
+crop = "all" # maize, wheat, soy, all
 start_year = 2007
 end_year = 2019
-pred_str = "t3s3" #t3s3, t2s2_int
+pred_str = "t2s2_int" #t3s3, t2s2_int
 
 do_cv_flag = True  # 10-fold cross-validation (OOS within-R2)
-save_model_flag = False
+save_model_flag = True
 
 root_dir = f"../../data"
 input_hist_file = f"{root_dir}/historical/linregress_inputs/INPUT_HISTORICAL.csv"
@@ -61,8 +61,10 @@ dfs_dtr = []
 
 if crop == "all":
     crops = ["maize", "wheat", "soy"]
+    crop_str = "all"
 else:
     crops = [crop]
+    crop_str = crop
 
 for crop in crops:
 
@@ -108,25 +110,39 @@ print()
 # Create an interaction term between country and year
 df_panel['year_numeric'] = df_panel['year'].astype('int')
 df_panel['country_id'] = df_panel['country'].astype('category')
-
-# Set the multi-index for panel data with 'country' (first term) as the entity and 'year' (second term) as the time
-df_panel = df_panel.set_index(['country', 'year'])
+df_panel['country_crop'] = df_panel['country'] + '_' + df_panel['crop']
+df_panel['country_crop_id'] = df_panel['country_crop'].astype('category')
 
 x_vars_panel = x_vars
 x_vars_str = ' + '.join([f"{var}" for var in x_vars_panel])
 
-x_vars_all = x_vars_panel + ['year_numeric'] + ['country_id']
+# Set the multi-index for panel data with 'country' (first term) as the entity and 'year' (second term) as the time
+if crop_str == "all":
+    df_panel = df_panel.set_index(['country_crop', 'year'])
+    x_vars_all = x_vars_panel + ['year_numeric'] + ['country_crop_id']
+    formula = f"{y_var} ~ 1 + {x_vars_str} + C(country_crop_id):year_numeric + EntityEffects"
+else:
+    df_panel = df_panel.set_index(['country', 'year'])
+    x_vars_all = x_vars_panel + ['year_numeric'] + ['country_id']
+    formula = f"{y_var} ~ 1 + {x_vars_str} + C(country_id):year_numeric + EntityEffects"
+
+
 tmp1 = df_panel[x_vars_all]
 tmp2 = df_panel[y_var]
 df_panel = pd.concat([tmp1, tmp2], axis=1)
-formula = f"{y_var} ~ 1 + {x_vars_str} + C(country_id):year_numeric + EntityEffects"
+
 print("Formula:", formula)
 model_panel = PanelOLS.from_formula(formula, data=df_panel, check_rank=False, drop_absorbed=True).fit()
 
 ################
 # USING DETRENDED VARS (FOR OOS R2 CALCULATION)
 ################
-df_panel_dtr = df_panel_dtr.set_index(['country', 'year'])
+if crop_str == "all":
+    df_panel_dtr['country_crop'] = df_panel_dtr['country'] + '_' + df_panel_dtr['crop']
+    df_panel_dtr = df_panel_dtr.set_index(['country_crop', 'year'])
+else:
+    df_panel_dtr = df_panel_dtr.set_index(['country', 'year'])
+
 x_vars_panel_dtr = x_vars_dtr
 x_vars_str_dtr = ' + '.join([f"{var}" for var in x_vars_panel_dtr])
 tmp1 = df_panel_dtr[x_vars_panel_dtr]
@@ -189,11 +205,11 @@ model_stats = pd.DataFrame({
 print("-----------")
 print(model_stats)
 print()
-print("-----------original vars:")
+#print("-----------original vars:")
 print(predictor_params)
 print()
-print("-----------detrended vars:")
-print(predictor_params_dtr)
+# print("-----------detrended vars:")
+# print(predictor_params_dtr)
 
 """
 FIT OLS MODEL TO COMPARE
@@ -230,8 +246,8 @@ predictors_ols = ["Intercept"] + predictors
 coefficients_selected = coefficients_df.loc[coefficients_df.index.isin(predictors_ols)]
 
 # Print the coefficients and p-values for selected predictors
-print("\nCoefficients and p-values for predictors:\n")
-print(coefficients_selected)
+# print("\nCoefficients and p-values for predictors:\n")
+# print(coefficients_selected)
 
 """
 DO OOS CROSS VALIDATION
@@ -306,15 +322,16 @@ if do_cv_flag == True:
     y_variance = df_cv_dtr[y_var_dtr].var()
 
     print()
-    print("Overall adj. R-square:", round(model_ols.rsquared_adj, 4))
     print("In-sample R-squared:", round(model_panel_dtr.rsquared_inclusive, 4))
     print("MEAN R-squared score for OOS, TRAIN & TEST, MSE:", round(r2_oos_mean, 4), round(r2_train_mean, 4),
           round(r2_test_mean, 4), round(mse_mean, 4))
     print("STD R-squared score for OOS, TRAIN and TEST, MSE:", round(r2_oos_std, 4), round(r2_train_std, 4),
           round(r2_test_std, 4), round(mse_std, 4))
 
-    print("--------")
-    print ("Crop & model:",crop, pred_str)
+    print ()
+    print("################################")
+    print ("Crop & model:",crop_str, pred_str)
+    print("Number of observations:", model_panel.nobs)
     print ("Overall adj. R2 and 10-fold CV R2:", round(model_ols.rsquared_adj, 4), round(r2_oos_mean, 4))
     print("Variance of y_var (MSE should be lower):", round(y_variance, 4))
     if mse_mean < y_variance:
@@ -323,13 +340,13 @@ if do_cv_flag == True:
         print("MSE larger than y_variance, not good YYY")
 
     print("################################")
+    print ()
 
 """
 SAVE MODEL
 """
 if save_model_flag == True:
-    print ()
-    print("Saving trained model...")
 
+    print("Saving trained model...")
     with open(output_model_file, "wb") as f:
-        pickle.dump(model_panel_dtr, f)
+        pickle.dump(model_panel, f)
