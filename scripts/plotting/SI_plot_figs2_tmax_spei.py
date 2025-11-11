@@ -3,23 +3,13 @@
 @author: Yi-Ling Hwong
 """
 import matplotlib as mpl
-# mpl.rcParams['figure.dpi'] = 300
+#mpl.rcParams['figure.dpi'] = 300
 import os
 import sys
-import glob
 import pandas as pd
 import numpy as np
-import xarray as xr
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-from matplotlib import colors
-from matplotlib.lines import Line2D
-from matplotlib.patches import Patch
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-import matplotlib.colors
-import seaborn as sns
 import geopandas as gpd
-import cartopy
 import cartopy.crs as ccrs
 import warnings
 warnings.filterwarnings(action='ignore')
@@ -39,11 +29,13 @@ var_units = {"tmax": "K",
              "spei": "-"}
 
 ref_start_year = 1990
-ref_end_year = 2000
-fut_start_year = 2010
+ref_end_year = 1999
+fut_start_year = 2000
 fut_end_year = 2019
-ts_start_year = 1990
+ts_start_year = 2000
 ts_end_year = 2019
+
+xticks = np.arange(ts_start_year, ts_end_year + 1, 5)
 
 root_dir = '../../data'
 country_shape_file = f"{root_dir}/resources/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp"
@@ -175,7 +167,9 @@ for idx, var in enumerate(vars):
     ax_ts.axhline(y=0, color='gray', linestyle='--', alpha=0.5)
     ax_ts.grid(True, alpha=0.3)
 
+
     # Format time series plot
+    ax_ts.set_xticks(xticks)
     ax_ts.set_xlim(ts_start_year, ts_end_year)
     ax_ts.tick_params(axis='both', labelsize=tick_fontsize)
 

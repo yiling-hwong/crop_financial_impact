@@ -3,23 +3,15 @@
 @author: Yi-Ling Hwong
 """
 import matplotlib as mpl
-# mpl.rcParams['figure.dpi'] = 300
+#mpl.rcParams['figure.dpi'] = 300
 import os
 import sys
-import glob
 import pandas as pd
 import numpy as np
-import xarray as xr
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 from matplotlib import colors
-from matplotlib.lines import Line2D
-from matplotlib.patches import Patch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import matplotlib.colors
-import seaborn as sns
 import geopandas as gpd
-import cartopy
 import cartopy.crs as ccrs
 import warnings
 warnings.filterwarnings(action='ignore')
@@ -32,10 +24,10 @@ PARAMETERS
 """
 crops = ["maize", "wheat", "soy"]
 ref_start_year = 1990
-ref_end_year = 2000
-fut_start_year = 2010
+ref_end_year = 1999
+fut_start_year = 2000
 fut_end_year = 2019
-ts_start_year = 1990
+ts_start_year = 2000
 ts_end_year = 2019
 
 root_dir = '../../data'

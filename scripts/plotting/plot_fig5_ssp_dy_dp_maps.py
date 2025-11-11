@@ -3,12 +3,11 @@
 @author: Yi-Ling Hwong
 """
 import matplotlib as mpl
-# mpl.rcParams['figure.dpi'] = 300
+#mpl.rcParams['figure.dpi'] = 300
 import os
 import sys
 import pandas as pd
 import numpy as np
-from scipy.stats import t
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import geopandas as gpd

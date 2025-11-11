@@ -2,15 +2,13 @@
 @author: Yi-Ling Hwong
 """
 import matplotlib as mpl
-# mpl.rcParams['figure.dpi'] = 300
+#mpl.rcParams['figure.dpi'] = 300
 import os
 import sys
-import glob
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import geopandas as gpd
 import cartopy.crs as ccrs
 import warnings

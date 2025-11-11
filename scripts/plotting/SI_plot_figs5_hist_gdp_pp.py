@@ -3,19 +3,13 @@
 @author: Yi-Ling Hwong
 """
 import matplotlib as mpl
-# mpl.rcParams['figure.dpi'] = 300
+#mpl.rcParams['figure.dpi'] = 300
 import os
 import sys
-import glob
-from pathlib import Path
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('whitegrid')
-from scipy.stats import t
-from matplotlib.lines import Line2D
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import warnings
 warnings.filterwarnings(action='ignore')
 
@@ -211,6 +205,7 @@ for region in regions:
                  color=ipcc_colors[region], markersize=1)
 
 ax1.set_yscale("log")
+ax1.tick_params(axis='y', which='minor', bottom=False)
 
 if ylim_top_gdp != None:
     ax1.set_ylim(top=ylim_top_gdp)
@@ -225,6 +220,8 @@ ax1.set_xlabel('Year', fontsize=label_fontsize)
 ax1.set_ylabel(label_gdp, fontsize=label_fontsize)
 ax1.tick_params(axis='both', labelsize=tick_fontsize)
 ax1.grid(True)
+
+
 
 ######################## MAIZE PP TIMESERIES
 ax2 = fig.add_subplot(222)
