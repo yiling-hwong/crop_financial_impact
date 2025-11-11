@@ -264,6 +264,10 @@ n = 0
 for col, crop in enumerate(['maize', 'wheat', 'soy']):
 
     title = f"{crop.capitalize()}"
+
+    if crop == "soy":
+        title = "Soybeans"
+
     label = label_alphabets[n]
 
     # Plot dp (top row)
@@ -273,7 +277,6 @@ for col, crop in enumerate(['maize', 'wheat', 'soy']):
         ax.set_ylabel(label_de, fontsize=label_fontsize)
 
     # Plot dy (bottom row)
-    title = f"{crop.capitalize()}"
     label = label_alphabets[n+3]
     ax = axes[1, col]
     plot_data(ax, degdp_stats, crop, title, label, regions, region_color_dict, bar_width, is_de=False)

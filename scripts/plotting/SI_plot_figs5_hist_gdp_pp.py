@@ -3,7 +3,7 @@
 @author: Yi-Ling Hwong
 """
 import matplotlib as mpl
-#mpl.rcParams['figure.dpi'] = 300
+mpl.rcParams['figure.dpi'] = 300
 import os
 import sys
 import pandas as pd
@@ -449,7 +449,7 @@ if ylim_bottom_pp != None:
     ax4.set_ylim(bottom=ylim_bottom_pp)
 
 ax4.set_xlim(right=end_year+0.6)
-ax4.set_title("Soy", pad=10, fontsize=title_fontsize)
+ax4.set_title("Soybeans", pad=10, fontsize=title_fontsize)
 ax4.text(0.0, 1.2, "d", transform=ax4.transAxes,fontsize=label_fontsize+1, fontweight='bold', va='top', ha='right')
 ax4.axhline(0, color="black", linestyle="dashed", lw=0.9)
 ax4.set_xlabel('Year', fontsize=label_fontsize)
