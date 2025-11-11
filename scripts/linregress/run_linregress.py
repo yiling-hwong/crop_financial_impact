@@ -20,13 +20,13 @@ import utils
 """
 PARAMETERS
 """
-crop = "all" # maize, wheat, soy, all
+crop = "maize" # maize, wheat, soy, all
 start_year = 2007
 end_year = 2019
 pred_str = "t3s3" #t3s3, t2s2_int
 
 do_cv_flag = True  # 10-fold cross-validation (OOS within-R2)
-save_model_flag = True
+save_model_flag = False
 
 root_dir = f"../../data"
 input_hist_file = f"{root_dir}/historical/linregress_inputs/INPUT_HISTORICAL.csv"

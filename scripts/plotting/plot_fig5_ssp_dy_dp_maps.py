@@ -48,12 +48,12 @@ ylim_top_dy = 4
 ylim_bottom_dy = -16
 ylim_top_dp = 60
 ylim_bottom_dp = -270
-start_year_plot = 2030  # for plotting
+start_year_plot = 2030
 end_year_plot = 2070
 
 window_size = 4
-smooth_method = "pandas"  # options: numpy, pandas, scipy
-np_mode = "full"  # full, same, valid
+smooth_method = "pandas"
+np_mode = "full"
 
 ipcc_colors = {"ldc":"crimson","developing":"goldenrod","developed":"dodgerblue"} #ldc,developing,developed
 ipcc_labels = {"ldc": "LDC", "developing": "Developing", "developed": "Developed"}
@@ -151,7 +151,6 @@ dp_ipcc = dp_all.merge(df_ipcc[["country", ar6_region]], on="country", how="left
 # Calculate regional means/sums for timeseries
 dy_ipcc_melted = dy_ipcc.melt(id_vars=['country', 'ssp','esm','crop','region_ar6_dev'], var_name='year', value_name='value')
 dp_ipcc_melted = dp_ipcc.melt(id_vars=['country', 'ssp','esm','crop','region_ar6_dev'], var_name='year', value_name='value')
-
 
 from scipy.stats import t
 

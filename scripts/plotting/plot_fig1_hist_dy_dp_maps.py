@@ -69,11 +69,9 @@ end_year_fut = 2019
 root_dir = '../../data'
 country_shape_file = f"{root_dir}/resources/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp"
 
-# Initialize empty DataFrames
 df_dy_all = []
 df_dp_all = []
 
-# Load data for all crops
 for crop in crops:
     dy_file = f"{root_dir}/historical/linregress_outputs/{crop}/isimip3a/dy_isimip3a_{pred_str}_hist{start_year_hist}-{end_year_hist}_fut{start_year_fut}-{end_year_fut}.csv"
     dp_file = f"{root_dir}/historical/linregress_outputs/{crop}/isimip3a/dp_isimip3a_{pred_str}_hist{start_year_hist}-{end_year_hist}_fut{start_year_fut}-{end_year_fut}.csv"
