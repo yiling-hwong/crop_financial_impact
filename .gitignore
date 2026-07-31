@@ -1,4 +1,4 @@
-# Hidden files and folders (.claude, .idea, .DS_Store, .ipynb_checkpoints, etc.)
+# Hidden files and folders (.idea, .DS_Store, .ipynb_checkpoints, etc.)
 .*
 !.gitignore
 
