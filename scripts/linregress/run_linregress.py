@@ -22,11 +22,12 @@ import utils
 PARAMETERS
 """
 crop = "maize"  # maize, wheat, soy, all
-start_year = 2007
+start_year = 2007 # 2007 (main analysis); 2000 (sensitivity check)
 end_year = 2019
 pred_str = "t3s3"  # t3s3, t2s2_int, t3s3_irr (incl.irrigation interaction)
 spei_month = "03" #03,06,09,12
 spei_str = f"_spei{spei_month}"
+tmax_unit = "K"  # K, degC
 
 do_cv_flag = True
 print_model_summary_flag = False
@@ -38,8 +39,9 @@ else:
     irr_str = ""
 
 root_dir = f'../../data'
-input_hist_file = f"{root_dir}/historical/linregress_inputs/{irr_str}INPUT_HISTORICAL{spei_str}.csv"
-output_model_file = f"{root_dir}/models/model_{crop}_{pred_str}{spei_str}.pickle"
+period_dir = "" if start_year == 2007 else f"{start_year}_{end_year}/"
+input_hist_file = f"{root_dir}/historical/linregress_inputs/{period_dir}{irr_str}INPUT_HISTORICAL{spei_str}.csv"
+output_model_file = f"{root_dir}/models/{period_dir}model_{crop}_{pred_str}{spei_str}.pickle"
 
 """
 X AND Y VARIABLES
@@ -62,7 +64,17 @@ print("Predictors:", predictors)
 """
 READ AND PROCESS INPUT DATA
 """
-df = pd.read_csv(input_hist_file)
+def read_input_hist():
+    df = pd.read_csv(input_hist_file)
+    if tmax_unit == "degC":
+        k = 273.15
+        t, t2, t3 = df["tmax"], df["tmax2"], df["tmax3"]
+        df["tmax"] = t - k
+        df["tmax2"] = t2 - 2 * k * t + k**2
+        df["tmax3"] = t3 - 3 * k * t2 + 3 * k**2 * t - k**3
+    return df
+
+df = read_input_hist()
 
 dfs = []
 
@@ -302,7 +314,7 @@ if do_cv_flag:
     # ------------------------------------------------------------------
     # Shared raw-data setup (used by both A and B)
     # ------------------------------------------------------------------
-    df_cv_raw = pd.read_csv(input_hist_file)
+    df_cv_raw = read_input_hist()
     if crop_str != "all":
         df_cv_raw = df_cv_raw[df_cv_raw["crop"] == crop_str]
     df_cv_raw = df_cv_raw[
