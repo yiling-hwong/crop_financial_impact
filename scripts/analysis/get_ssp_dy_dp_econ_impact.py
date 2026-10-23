@@ -33,8 +33,11 @@ ssps = ["ssp126", "ssp245", "ssp370"]
 esms = ["gfdl-esm4", "ipsl-cm6a-lr", "mpi-esm1-2-hr", "mri-esm2-0", "ukesm1-0-ll"]
 
 root_dir = f'../../data'
-ext_root_dir = "/Users/yhwong/Documents/IIASA/NGFS_crop_impact"
-gs_dir = f"{ext_root_dir}/outputs/growing_season"
+tmax_hist_dir = "path/to/historical/tmax"  # growing-season gridded tmax netCDFs, ISIMIP3a
+spei_hist_dir = "path/to/historical/spei"  # growing-season gridded SPEI netCDFs, ISIMIP3a
+tmax_ssp_dir = "path/to/ssp/tmax"  # growing-season gridded tmax netCDFs, ISIMIP3b
+spei_ssp_dir = "path/to/ssp/spei"  # growing-season gridded SPEI netCDFs, ISIMIP3b
+rdf_dir = "path/to/pixel_data"  # pixel-to-country mapping with harvested area (rdf_{crop}.csv), ISO3 country names (iso3.csv)
 period_dir = "" if calib_start_year == 2007 else f"{calib_start_year}_{calib_end_year}/"
 tmax_offset = 273.15 if tmax_unit == "degC" else 0
 
@@ -52,7 +55,7 @@ fao_drop = ['VNM', 'SSD', 'MNE']
 fao_last_year = 2022
 hg_to_t = 1e-4
 
-cnames = pd.read_csv(f"{ext_root_dir}/corey-yield-impacts/data/iso3.csv", index_col="iso3")["name"]
+cnames = pd.read_csv(f"{rdf_dir}/iso3.csv", index_col="iso3")["name"]
 gdp = utils.load_ssp_gdp_weights(root_dir)
 
 """
@@ -75,15 +78,15 @@ for crop in crops:
     with open(model_file, "rb") as f:
         coefs = pickle.load(f).params[predictors].values
 
-    rdf = pd.read_csv(f"{ext_root_dir}/corey-yield-impacts/data/rdf_{crop}.csv", index_col="pixID")
+    rdf = pd.read_csv(f"{rdf_dir}/rdf_{crop}.csv", index_col="pixID")
     harv_area_frac = rdf["harv_area"] / rdf.groupby("country")["harv_area"].transform("sum")
 
     """
     YIELD CHANGE (dy, %)
     """
     hist_slice = slice(f"{start_year_hist}-01-01", f"{end_year_hist}-12-31")
-    tmax_hist = xr.open_dataset(f"{gs_dir}/tmax/isimip3a/corey/pixdat_tmax_gs_{crop}_hist.nc")["tmax"].sel(time=hist_slice) - tmax_offset
-    spei_hist = xr.open_dataset(f"{gs_dir}/spei/isimip3a/corey/pixdat_spei{ssp_spei_month}_gs_{crop}_hist.nc")["spei"].sel(time=hist_slice)
+    tmax_hist = xr.open_dataset(f"{tmax_hist_dir}/pixdat_tmax_gs_{crop}_hist.nc")["tmax"].sel(time=hist_slice) - tmax_offset
+    spei_hist = xr.open_dataset(f"{spei_hist_dir}/pixdat_spei{ssp_spei_month}_gs_{crop}_hist.nc")["spei"].sel(time=hist_slice)
     ybase = get_yhat(tmax_hist, spei_hist, coefs)
 
     fut_slice = slice(f"{start_year_fut}-01-01", f"{end_year_fut}-12-31")
@@ -91,8 +94,8 @@ for crop in crops:
     for ssp in ssps:
         for esm in esms:
             print(f"  {ssp} {esm}")
-            tmax_file = f"{gs_dir}/tmax/isimip3b/corey/2015_2100/{esm}_pixdat_tmax_{ssp}_gs_{crop}.nc"
-            spei_file = f"{gs_dir}/spei/isimip3b/corey/2015_2100/{esm}_pixdat_spei_{ssp}_gs_{crop}.nc"
+            tmax_file = f"{tmax_ssp_dir}/{esm}_pixdat_tmax_{ssp}_gs_{crop}.nc"
+            spei_file = f"{spei_ssp_dir}/{esm}_pixdat_spei_{ssp}_gs_{crop}.nc"
             tmax = xr.open_dataset(tmax_file)["tmax"].sel(time=fut_slice).load() - tmax_offset
             spei = xr.open_dataset(spei_file)["spei"].sel(time=fut_slice).load()
 
