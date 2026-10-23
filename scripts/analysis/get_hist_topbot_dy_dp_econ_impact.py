@@ -26,6 +26,7 @@ estrings = ["top10", "bot50", "total"]
 
 start_year_hist, end_year_hist = 1974, 2004  # 1974-2004, 1970-1990, 1980-2000, 1984-2014
 start_year_fut, end_year_fut = 1990, 2019
+tmax_unit = "K"  # K (main analysis), degC
 
 root_dir = f'../../data'
 tmax_hist_dir = "path/to/historical/tmax"  # growing-season gridded tmax netCDFs, ISIMIP3a
@@ -42,6 +43,7 @@ drop_countries = {
 }
 fao_drop = ['VNM', 'SSD', 'MNE']
 hg_to_t = 1e-4
+tmax_offset = 273.15 if tmax_unit == "degC" else 0
 
 cnames = pd.read_csv(f"{rdf_dir}/iso3.csv", index_col="iso3")["name"]
 gdp = pd.read_csv(f"{root_dir}/resources/gdp_world_bank_2015_usd.csv", index_col="Country Code")
@@ -90,7 +92,7 @@ for crop in crops:
     """
     YIELD CHANGE (dy, %)
     """
-    tmax = open_gs(tmax_hist_dir, "tmax", "pixdat_tmax", crop)
+    tmax = open_gs(tmax_hist_dir, "tmax", "pixdat_tmax", crop) - tmax_offset
     base_tmax = tmax.sel(time=slice(f"{start_year_hist}-01-01", f"{end_year_hist}-12-31"))
     ybase = get_yhat(base_tmax, coefs)
 
